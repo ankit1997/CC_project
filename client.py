@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from helper import ClientHelper
+import os
 
 app = Flask(__name__)
 helper = ClientHelper()
@@ -36,8 +37,21 @@ def add_file():
 
 @app.route('/remaining_space', methods=['GET', 'POST'])
 def get_remaining_space():
-	return jsonify({'storage': helper.storage})
+	dir_size = 0 
+	for f in os.listdir("cloud-client"):
+		dir_size = dir_size + os.stat(os.path.join("cloud-client", f)).st_size
+
+	dir_size = dir_size/(1024*1024) 
+	return jsonify({'storage': helper.storage-(dir_size)})
 
 if __name__ == '__main__':
 	helper.init({'dirname': 'cloud-client', 'storage': 10})
-	app.run(debug=True)
+	app.run(host="0.0.0.0", port=10001, debug=True)
+
+
+
+
+
+
+
+	
