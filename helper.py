@@ -1,5 +1,6 @@
 import os
 import traceback
+import numpy as np
 from PIL import Image
 
 class ClientHelper:
@@ -28,12 +29,34 @@ class ClientHelper:
 				store = 0
 		return store
 
+	def get_file(self, json):
+		fname = json['fname']
+		print("Getting {}".format(fname))
+
+		fname = os.path.join(self.dirname, fname)
+		extension = os.path.splitext(os.path.basename(fname))[1]
+
+		res = {'success': True, 'error': '', 'fname': fname, 'fdata': ''}
+		if os.path.isfile(fname):
+			if extension in self.TEXT_EXTENSIONS:
+				res['fdata'] = self._get_text_file(fname)
+			elif extension in self.IMG_EXTENSIONS:
+				res['fdata'] = self._get_img_file(fname)
+			else:
+				res['success'] = False
+				res['error'] = 'File format {} not supported...yet!'.format(extension)
+		else:
+			res['success'] = False
+			res['error'] = 'File {} not found.'.format(fname)
+
+		print("Done.")
+		return res
+
 	def save_file(self, json):
-		print(json)
+		print("Saving file...")
 		fdata = json['fdata']
 		fname = os.path.basename(json['fname'])
 		extension = os.path.splitext(fname)[1]
-		print(fname)
 		fname = os.path.join(self.dirname, fname)
 
 		res = {'success': False, 'error': ''}
@@ -43,7 +66,7 @@ class ClientHelper:
 			res['success'] = self._save_img_file(fname, fdata)
 		else:
 			res['error': 'File format {} not supported!'.format(extension)]
-
+		print("Done.")
 		return res
 
 	def _save_text_file(self, fname, data):
@@ -68,6 +91,12 @@ class ClientHelper:
 		except:
 			print(traceback.format_exc())
 		return False
+
+	def _get_text_file(self, fname):
+		return open(fname).read()
+
+	def _get_img_file(self, fname):
+		return np.array(Image.open(fname)).tolist()
 
 
 

@@ -10,17 +10,6 @@ def index():
 	# TODO: show files using HTML
 	return "Welcome to our cloud network"
 
-# @app.route('/init', methods=['POST', 'GET'])
-# def init():
-# 	'''
-# 		Initialize the client program.
-# 		Jobs:
-# 			1. Create a directory on the system. This is where all the files will be stored.
-# 	'''
-# 	json = request.get_json()
-# 	helper.init(json)
-# 	return "Done"
-
 @app.route('/add_file', methods=['GET', 'POST'])
 def add_file():
 	'''
@@ -33,6 +22,12 @@ def add_file():
 	'''
 	json = request.get_json()
 	res = helper.save_file(json)
+	return jsonify(res)
+
+@app.route('/get_file', methods=['GET', 'POST'])
+def get_file():
+	json = request.get_json()
+	res = helper.get_file(json)
 	return jsonify(res)
 
 @app.route('/remaining_space', methods=['GET', 'POST'])
