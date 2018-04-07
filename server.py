@@ -133,7 +133,7 @@ class ServerHelper:
             Save the map file.
         '''
         with open(MAP_FILE, 'w') as f:
-            json.dump(self.map, f)
+            json.dump(self.map, f, indent=4)
 
     def _save_text_file(self, fname, data):
         with open(fname, 'w') as file:
