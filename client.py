@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify
-from helper import ClientHelper
 import os
+from helper import ClientHelper
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
-STORAGE_DIR = "client-storage"
 helper = ClientHelper()
+STORAGE_DIR = "client-storage"
 
 @app.route('/')
 def index():
@@ -33,21 +33,21 @@ def get_file():
 
 @app.route('/remaining_space', methods=['GET', 'POST'])
 def get_remaining_space():
-    dir_size = 0 
+    dir_size = 0
     for f in os.listdir(STORAGE_DIR):
         dir_size = dir_size + os.stat(os.path.join(STORAGE_DIR, f)).st_size
 
     dir_size = dir_size/(1024*1024) 
     return jsonify({'storage': helper.storage-(dir_size)})
 
+@app.route('/evaluate_students', methods=['GET', 'POST'])
+def evaluate_students():
+	json = request.get_json()
+
+	res = helper.test(json)
+	return jsonify(res)
+
 if __name__ == '__main__':
     helper.init({'dirname': STORAGE_DIR, 'storage': 10})
     app.run(host="0.0.0.0", port=10001, debug=True)
-
-
-
-
-
-
-
     

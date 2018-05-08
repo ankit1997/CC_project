@@ -5,14 +5,16 @@ from PIL import Image
 
 class ClientHelper:
     def __init__(self):
-        self.TEXT_EXTENSIONS = ['.txt', '.py', '.c', '.cpp']
+        self.TEXT_EXTENSIONS = ['.txt', '.py', '.c', '.cpp', '.java']
         self.IMG_EXTENSIONS = ['.jpg', '.png', '.jpeg']
         self.dirname = None
 
     def init(self, json):
         dirname = json['dirname']
         storage = json['storage']
-        os.makedirs(dirname, exist_ok=True)
+        # os.makedirs(dirname, exist_ok=True)
+        if not os.path.isdir(dirname):
+            os.mkdir(dirname, 700)
         self.dirname = dirname
 
         # make storage data file
@@ -54,20 +56,51 @@ class ClientHelper:
 
     def save_file(self, json):
         print("Saving file...")
+
         fdata = json['fdata']
         fname = os.path.basename(json['fname'])
         extension = os.path.splitext(fname)[1]
         fname = os.path.join(self.dirname, fname)
 
-        res = {'success': False, 'error': ''}
+        res = {'success': False, 'error': '', 'meta': None}
+
+        # Check if file already exists
+        if os.path.isfile(fname):
+            res['meta'] = 'File already existed, overwritten in client.'
+
         if extension in self.TEXT_EXTENSIONS:
             res['success'] = self._save_text_file(fname, fdata)
         elif extension in self.IMG_EXTENSIONS:
             res['success'] = self._save_img_file(fname, fdata)
         else:
             res['error': 'File format {} not supported!'.format(extension)]
-        print("Done.")
+
         return res
+
+    def test(self, json):
+        try:
+            import tester.tester as tester
+        except ImportError:
+            return {'result': "ERROR: No tester.py found. First send the tester file."}
+
+        fname = os.path.basename(json['fname'])
+        fname = os.path.join(self.dirname, fname)
+
+        inputFile = os.path.basename(json['inputFile'])
+        inputFile = os.path.join(self.dirname, inputFile)
+        
+        outputFile = os.path.basename(json['outputFile'])
+        outputFile = os.path.join(self.dirname, outputFile)
+
+        # Save files
+        with open(fname, 'w') as f:
+            f.write(json['fdata'])
+        with open(inputFile, 'w') as f:
+            f.write(json['inputData'])
+        with open(outputFile, 'w') as f:
+            f.write(json['outputData'])
+
+        return tester.test(fname, inputFile, outputFile)
 
     def _save_text_file(self, fname, data):
         try:
@@ -97,8 +130,3 @@ class ClientHelper:
 
     def _get_img_file(self, fname):
         return np.array(Image.open(fname)).tolist()
-
-
-
-
-
